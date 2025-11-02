@@ -1,0 +1,43 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-5b5531ca3fb5e35e2c4570fcf351803df7230513",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/CipherLocker.sol": "project/contracts/CipherLocker.sol",
+    "contracts/ConfidentialSplitPay.sol": "project/contracts/ConfidentialSplitPay.sol",
+    "contracts/Counter.sol": "project/contracts/Counter.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/CipherLocker.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\ncontract CipherLocker {\r\n    bytes public payloadA;\r\n    bytes public payloadB;\r\n    event Stored(bytes a, bytes b);\r\n    function set(bytes calldata a, bytes calldata b) external {\r\n        payloadA = a; payloadB = b; emit Stored(a,b);\r\n    }\r\n    function getA() external view returns (bytes memory) { return payloadA; }\r\n    function getB() external view returns (bytes memory) { return payloadB; }\r\n}\r\n"
+      },
+      "project/contracts/ConfidentialSplitPay.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\n// Mock-FHE: same API, works on any EVM.\r\n// Stores plain uint32 and returns ABI-encoded bytes to mimic ciphertext blobs.\r\ncontract ConfidentialSplitPay {\r\n    uint32 private a;\r\n    uint32 private b;\r\n    uint8  public pctA = 60; // 60/40\r\n\r\n    function setInputsPlain(uint32 _a, uint32 _b) external {\r\n        a = _a;\r\n        b = _b;\r\n    }\r\n\r\n    function setInputs(bytes calldata, bytes calldata) external {\r\n        // kept for API compatibility; no-op in mock\r\n        revert(\"Mock: use setInputsPlain\");\r\n    }\r\n\r\n    // Return \"encrypted-looking\" bytes (ABI-encoded)\r\n    function splitForA() public view returns (bytes memory) {\r\n        uint32 sum = a + b;\r\n        uint32 part = (sum * uint32(pctA)) / 100;\r\n        return abi.encode(part);\r\n    }\r\n\r\n    function splitForB() external view returns (bytes memory) {\r\n        uint32 sum = a + b;\r\n        uint32 aPart = abi.decode(splitForA(), (uint32));\r\n        uint32 bPart = sum - aPart;\r\n        return abi.encode(bPart);\r\n    }\r\n}\r\n"
+      },
+      "project/contracts/Counter.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.28;\n\ncontract Counter {\n  uint public x;\n\n  event Increment(uint by);\n\n  function inc() public {\n    x++;\n    emit Increment(1);\n  }\n\n  function incBy(uint by) public {\n    require(by > 0, \"incBy: increment should be positive\");\n    x += by;\n    emit Increment(by);\n  }\n}\n"
+      }
+    }
+  }
+}
